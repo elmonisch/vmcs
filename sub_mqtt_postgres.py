@@ -4,28 +4,41 @@ import json
 
 from psycopg2 import Error
 
-def filter_message(message)
+def filter_message(plazaID, laneID, message):
+    print(message)
+    param = message["parameter"]
+    datatype = param["dataType"]
+
+    if datatype != "":
+        message = json.dumps(message)
+        cur.execute(f"insert into vmcs_filter (plazaid, laneid, lcs_data) values ('{plazaID}', '{laneID}', '{message}')")
+        con.commit()
+    else:
+        message = json.dumps(message)
+        cur.execute(f"insert into vmcs (plazaid, laneid, lcs_data) values ('{plazaID}', '{laneID}', '{message}')")
+        con.commit()
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+ str(rc))
-    client.subscribe("test/+")
+    client.subscribe("ves/+/+")
 
 def on_message(client, userdata, msg):
     message = msg.payload.decode("utf-8")
-    print(f"Message : {message}")
-    json.dumps(message)
-    
-    # post = {"topic": f"{msg.topic}", "value": f"{message}"}
-    # post = json.dumps(post)
+    message = json.loads(message)
+    message = dict(message)
 
-    # cur.execute(f"insert into test_v1_filter (lcs_data) values ('{post}')")
-    # con.commit()
+    topic = msg.topic
+    topic = topic.split("/")
+
+    plazaID, laneID = topic[1], topic[2]
+
+    filter_message(plazaID, laneID, message)
 
 def connecting():
     try:
-
         con = pg.connect(host="localhost", database="postgres", user="postgres", password="mysecretpassword")
         cur = con.cursor()
+        
     except (Exception, Error) as error:
         print("Error while connecting to PostgreSQL", error)
     

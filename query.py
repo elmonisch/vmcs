@@ -16,9 +16,14 @@ def connecting():
 
 con, cur = connecting()
 
-cur.execute("select * from test_v1_filter;")
+cur.execute("select * from vmcs_filter;")
 res = cur.fetchall()
-print(res)
+# print(res)
 
-a, b = res[-1]
-print(b['value'])
+_, _, _, b, _ = res[-1]
+print(b)
+print(b['parameter'])
+
+# c = b['value']
+# print(c, type(c))
+# print(c['parameter'])
